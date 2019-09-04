@@ -10,6 +10,10 @@ variable "billing_account" {
   description = "Billing account id"
 }
 
+variable "bucket_name" {
+  description = "GCS bucket name to create"
+}
+
 variable "project_name" {
   description = "Project name"
   default     = "slo-pipeline"

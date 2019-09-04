@@ -14,30 +14,14 @@
  * limitations under the License.
  */
 
-output "project_id" {
-  value = var.project_id
+output "service_account_email" {
+  value = google_service_account.main.email
 }
 
-output "exporters" {
-  value = data.template_file.exporters.rendered
+output "config" {
+  value = data.template_file.slo.rendered
 }
 
-output "function_name" {
-  value = google_cloudfunctions_function.function.name
-}
-
-output "function_bucket_name" {
-  value = google_storage_bucket.bucket.name
-}
-
-output "function_bucket_object_name" {
-  value = google_storage_bucket_object.main.name
-}
-
-output "pubsub_topic_name" {
-  value = google_pubsub_topic.stream.name
-}
-
-output "bigquery_dataset_self_link" {
-  value = google_bigquery_dataset.main.self_link
+output "scheduler_job_name" {
+  value = module.slo-cloud-function.name
 }

@@ -31,6 +31,7 @@ module "slo-project" {
   labels                     = var.labels
 
   activate_apis = [
+    "appengine.googleapis.com",
     "pubsub.googleapis.com",
     "bigquery-json.googleapis.com",
     "cloudfunctions.googleapis.com",
@@ -49,10 +50,11 @@ module "slo-pipeline" {
   project_id                  = module.slo-project.project_id
   bigquery_project_id         = module.slo-project.project_id
   bigquery_dataset_name       = "slo_reports"
+  bucket_name                 = var.bucket_name
   stackdriver_host_project_id = var.stackdriver_host_project_id
 }
 
-module "slo-definition-1" {
+module "slo-definition" {
   source             = "../../modules/slo"
   name               = "slo-pubsub-ack"
   region             = "${var.region}1"
@@ -73,19 +75,3 @@ module "slo-definition-1" {
   pubsub_topic_name = module.slo-pipeline.pubsub_topic_name
   labels            = var.labels
 }
-
-module "slo-definition-2" {
-  source              = "./modules/slo"
-  project_id          = module.slo-project.project_id
-  pubsub_topic        = module.slo-pipeline.pubsub_topic_name
-  slo_config          = "slo_linear.json.bak"
-  error_budget_policy = "error_budget_policy.json.bak"
-}
-
-# module "slo-definition-3" {
-#   source = "./modules/slo"
-#   project_id          = module.slo-project.project_id
-#   pubsub_topic        = module.slo-pipeline.pubsub_topic_name
-#   slo_config          = "slo_linear.json.bak"
-#   error_budget_policy = "error_budget_policy.json.bak"
-# }
