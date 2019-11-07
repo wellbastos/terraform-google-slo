@@ -50,21 +50,55 @@ resource "local_file" "error_budget_policy" {
   filename = "${path.module}/code/error_budget_policy.json"
 }
 
-module "slo-cloud-function" {
-  source                                = "github.com/terraform-google-modules/terraform-google-scheduled-function"
-  project_id                            = var.project_id
-  region                                = var.region
-  job_schedule                          = var.schedule
-  job_name                              = local.full_name
-  topic_name                            = local.full_name
-  bucket_name                           = local.full_name
-  function_name                         = local.full_name
-  function_description                  = var.config.slo_description
-  function_entry_point                  = "main"
-  function_source_directory             = "${path.module}/code"
-  function_available_memory_mb          = 128
-  function_runtime                      = "python37"
-  function_source_archive_bucket_labels = var.labels
-  function_service_account_email        = google_service_account.main.email
-  function_labels                       = var.labels
+# Cloud function
+data "archive_file" "main" {
+  type        = "zip"
+  output_path = pathexpand("${path.module}/code.zip")
+  source_dir  = pathexpand("${path.module}/code")
 }
+
+resource "google_storage_bucket" "bucket" {
+  name    = local.full_name
+  project = var.project_id
+}
+
+resource "google_storage_bucket_object" "main" {
+  name                = "slo.zip"
+  bucket              = google_storage_bucket.bucket.name
+  source              = data.archive_file.main.output_path
+  content_disposition = "attachment"
+  content_encoding    = "gzip"
+  content_type        = "application/zip"
+}
+
+resource "google_cloudfunctions_function" "function" {
+  description           = "SLO Exporter to BigQuery or Stackdriver Monitoring"
+  name                  = var.function_name
+  available_memory_mb   = 128
+  project               = var.project_id
+  region                = var.region
+  service_account_email = google_service_account.main.email
+  source_archive_bucket = google_storage_bucket.bucket.name
+  source_archive_object = google_storage_bucket_object.main.name
+  runtime               = "python37"
+  entry_point           = "main"
+}
+
+# module "slo-cloud-function" {
+#   source                                = "github.com/terraform-google-modules/terraform-google-scheduled-function"
+#   project_id                            = var.project_id
+#   region                                = var.region
+#   job_schedule                          = var.schedule
+#   job_name                              = local.full_name
+#   topic_name                            = local.full_name
+#   bucket_name                           = local.full_name
+#   function_name                         = local.full_name
+#   function_description                  = var.config.slo_description
+#   function_entry_point                  = "main"
+#   function_source_directory             = "${path.module}/code"
+#   function_available_memory_mb          = 128
+#   function_runtime                      = "python37"
+#   function_source_archive_bucket_labels = var.labels
+#   function_service_account_email        = google_service_account.main.email
+#   function_labels                       = var.labels
+# }

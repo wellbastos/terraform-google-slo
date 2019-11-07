@@ -29,7 +29,7 @@ output "service_account_email" {
   value       = google_service_account.main.email
 }
 
-output "scheduler_job_name" {
-  description = "Cloud Scheduler job name"
-  value       = module.slo-cloud-function.name
-}
+# output "scheduler_job_name" {
+#   description = "Cloud Scheduler job name"
+#   value       = module.slo-cloud-function.name
+# }
