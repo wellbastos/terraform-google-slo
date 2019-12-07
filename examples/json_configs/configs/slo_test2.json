@@ -1,0 +1,22 @@
+{
+  "slo_name": "ps-acked-msg",
+  "slo_target": 0.9,
+  "slo_description": "Acked Pub/Sub messages over total number of Pub/Sub messages",
+  "service_name": "svc",
+  "feature_name": "feature",
+  "backend": {
+    "class": "Stackdriver",
+    "measurement": {
+      "filter_valid": "project=\"${var.project_id}\" AND metric.type=\"pubsub.googleapis.com/subscription/push_request_latencies\"",
+    },
+    "method": "good_bad_ratio",
+    "project_id": "rnm-shared-monitoring"
+  },
+  "exporters": [
+    {
+      "class": "Pubsub",
+      "project_id": "rnm-shared-slo-6c95",
+      "topic_name": "slo-pipeline-compact"
+    }
+  ],
+}
